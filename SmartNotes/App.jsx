@@ -9,7 +9,6 @@ import ForgotPassword from "./components/Authentication/ForgotPassword"
 import PrivateRoutes from "./components/PrivateRoutes";
 import UpdateProfile from "./components/Authentication/UpdateProfile";
 import Main from './components/Main';
-import Scrollbar from './components/Scrollbar';
 // import './index.css'
 // import Dashboard from "./components/Drive/Dashboard";
 
