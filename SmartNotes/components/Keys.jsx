@@ -69,10 +69,10 @@ const Keys = ({mediumSecret, setMediumSecret,
         }
     
         try {
-            const encryptedHashnodeSecret = AES.encrypt(hashnodeSecret, 'your-secret-key').toString();
-            const encryptedMediumSecret = AES.encrypt(mediumSecret, 'your-secret-key').toString();
-            const encryptedOpenAISecret = AES.encrypt(openAISecret, 'your-secret-key').toString();
-            const encryptedDevToSecret = AES.encrypt(devToSecret, 'your-secret-key').toString();
+            const encryptedHashnodeSecret = AES.encrypt(hashnodeSecret, import.meta.env.VITE_SECRET).toString();
+            const encryptedMediumSecret = AES.encrypt(mediumSecret, import.meta.env.VITE_SECRET).toString();
+            const encryptedOpenAISecret = AES.encrypt(openAISecret, import.meta.env.VITE_SECRET).toString();
+            const encryptedDevToSecret = AES.encrypt(devToSecret, import.meta.env.VITE_SECRET).toString();
     
             // const userSecretDocRef = doc(secretsCollection, currentUser.uid);
             // const userSecretDocSnapshot = await getDoc(userSecretDocRef);
@@ -118,10 +118,10 @@ const Keys = ({mediumSecret, setMediumSecret,
             if (userSecretDocSnapshot.exists()) {
                 const data = userSecretDocSnapshot.data();
 
-                const decryptedHashnodeSecret = AES.decrypt(data.hashnodeSecret, 'your-secret-key').toString(enc.Utf8);
-                const decryptedMediumSecret = AES.decrypt(data.mediumSecret, 'your-secret-key').toString(enc.Utf8);
-                const decryptedOpenAISecret = AES.decrypt(data.openAISecret, 'your-secret-key').toString(enc.Utf8);
-                const decryptedDevToSecret = AES.decrypt(data.devToSecret, 'your-secret-key').toString(enc.Utf8);
+                const decryptedHashnodeSecret = AES.decrypt(data.hashnodeSecret, import.meta.env.VITE_SECRET).toString(enc.Utf8);
+                const decryptedMediumSecret = AES.decrypt(data.mediumSecret, import.meta.env.VITE_SECRET).toString(enc.Utf8);
+                const decryptedOpenAISecret = AES.decrypt(data.openAISecret, import.meta.env.VITE_SECRET).toString(enc.Utf8);
+                const decryptedDevToSecret = AES.decrypt(data.devToSecret, import.meta.env.VITE_SECRET).toString(enc.Utf8);
     
                 updateHashnode(decryptedHashnodeSecret || "");
                 setMediumSecret(decryptedMediumSecret || "");
