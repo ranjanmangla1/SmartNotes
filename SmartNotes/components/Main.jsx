@@ -33,16 +33,10 @@ export default function Main() {
     }
  
     const onTempNoteTextChange = (newValue) => {
-        // Update the state with the new value
         setTempNoteText(newValue);
     };
 
     const [title, setTitle] = React.useState("New title 34-35");
-    // const [title, setTitle] = useState('New Note');
-
-    // const updateTitle = (newTitle) => {
-    //     setTitle(newTitle)
-    // }
 
     const currentNote = 
         notes.find(note => note.id === currentNoteId) 
@@ -52,7 +46,6 @@ export default function Main() {
 
     const updateTitle = (newTitle) => {
         setTitle(newTitle);
-        // Update the current note's title in Firestore
         if (currentNoteId) {
           const docRef = doc(db, "notes", currentNoteId);
           setDoc(docRef, { title: newTitle }, { merge: true });
@@ -75,19 +68,6 @@ export default function Main() {
 
         return unsubscribe;
     }, [currentUser]);
-
-    // React.useEffect(() => {
-    //     const unsubscribe = onSnapshot(notesCollection, function(snapshot) {
-    //     // Sync up our local notes array with the snapshot data
-    //         const notesArr = snapshot.docs.map(doc => ({
-    //             ...doc.data(), 
-    //             id: doc.id 
-    //         }))
-    //         setNotes(notesArr)
-    //     })
-    //     return unsubscribe
-    // }, [])
-
      
     React.useEffect(() => {
         if (!currentNoteId)  {
@@ -112,18 +92,6 @@ export default function Main() {
         return () => clearTimeout(timeoutId)
     }, [tempNoteText, title])
 
-    // console.log(sortedNotes)
-
-    // async function createNewNote() {
-    //     const newNote = {
-    //         body: "# Type your markdown note's title here",
-    //         createdAt: Date.now(),
-    //         updatedAt: Date.now()
-    //     }
-    //     const newNoteRef = await addDoc(notesCollection, newNote)
-    //     setCurrentNoteId(newNoteRef.id)
-    // }
-
     async function createNewNote() {
         if (!currentUser) return;
 
@@ -138,16 +106,6 @@ export default function Main() {
         const newNoteRef = await addDoc(notesCollection, newNote);
         setCurrentNoteId(newNoteRef.id);
     }
-
-    // async function deleteNote(noteId) {
-    //     if (!currentUser) return;
-
-    //     const docRef = doc(db, "notes", noteId);
-    //     const note = await docRef.get();
-    //     if (note.exists() && note.data().userId === currentUser.uid) {
-    //         await deleteDoc(docRef);
-    //     }
-    // }
 
     async function deleteNote(noteId) {
         if (!currentUser) {
@@ -176,17 +134,9 @@ export default function Main() {
         await setDoc(docRef, { body: text,title: newTitle, updatedAt: Date.now() }, { merge: true })
     }
 
-    // async function deleteNote(noteId) {
-    //     // event.stopPropagation()
-    //     // setNotes(oldNotes => oldNotes.filter(note => note.id !== noteId))
-    //     const docRef = doc(db, "notes",noteId)
-    //     await deleteDoc(docRef)
-    // }
-
     return (
         <main>
-            {
-                 
+            {  
                 notesLen === null
                  ? 
                  <div className="no-notes">
@@ -258,11 +208,6 @@ export default function Main() {
                             Create one now
                         </button>
                     </div>)
-                    // <Container className="d-flex align-items-center justify-content-center" style={{minHeight: "100vh"}}>
-                    //     <div className="w-100" style={{maxWidth: "400px"}}>
-                    //         <Auth />
-                    //     </div>
-                    // </Container>
             }
         </main>
     )

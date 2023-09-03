@@ -3,7 +3,7 @@ import { Button, Modal, Form, ButtonGroup } from 'react-bootstrap'
 import { useAuth } from '../contexts/AuthContext';
 import { handleImageUpload } from '../firebase';
 
-const PublishBlog = ({ currentNoteText, mediumSecret, hashnodeSecret, openAISecret, editorTitle }) => {
+const PublishBlog = ({ currentNoteText, mediumSecret, hashnodeSecret, devToSecret ,openAISecret, editorTitle }) => {
   const [open, setOpen] = useState(false);
 
   const [checkedBoxes, setCheckedBoxes] = useState({
@@ -86,9 +86,9 @@ const PublishBlog = ({ currentNoteText, mediumSecret, hashnodeSecret, openAISecr
           }
         }
 
-        if(checkedBoxes[Hashnode]) {
-            console.log('posting blog on hashnode')
-        }
+        // if(checkedBoxes[Hashnode]) {
+        //     console.log('posting blog on hashnode')
+        // }
 
         if (checkedBoxes['Dev.to']) {
             // Use Markdown format for content
@@ -96,23 +96,23 @@ const PublishBlog = ({ currentNoteText, mediumSecret, hashnodeSecret, openAISecr
 
             const article = {
               title: {title},
-              body_markdown, // Use the variable defined above
+              body_markdown, 
               tags: tagArray,
               series: seriesArray,
-              published: true, // Set to true if you want to publish the article
-              // Add user input for these properties
-              main_image: imageLink, // Set to a valid image URL or null
-              canonical_url: canonicalUrl, // Set to the original URL or null
-              description: description, // Set to a short description or null
+              published: true, 
+              main_image: imageLink,
+              canonical_url: canonicalUrl, 
+              description: description, 
             };
           
             const articleData = { article };
           
             try {
-              const devtoResponse = await fetch(`http://localhost:3001/post-article`, {
+              const devtoResponse = await fetch(`${import.meta.env.VITE_API}/post-devto`, {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',
+                  'Authorization': devToSecret
                 },
                 body: JSON.stringify(articleData),
               });
@@ -138,7 +138,7 @@ const PublishBlog = ({ currentNoteText, mediumSecret, hashnodeSecret, openAISecr
                 tags: tagArray,
               };
               
-              fetch('http://localhost:3000/post-blog', {
+              fetch(`${import.meta.VITE_API}/post-medium`, {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',
@@ -162,35 +162,21 @@ const PublishBlog = ({ currentNoteText, mediumSecret, hashnodeSecret, openAISecr
             onClick={openModal} 
             size="sm" 
             variant="dark" 
-            // onMouseEnter={handleMouseEnter}
             style={{ padding: "11px 7px", margin:"0.8rem" ,border: "1px solid black", borderRadius: "3px"}}
-            // onMouseLeave={handleMouseLeave}
         >
-                {/* <FontAwesomeIcon icon={faKey} /> */}
                 Publish Blog
         </Button>
         <Modal style={{
                     backdropFilter: 'blur(2px)',
                 }} show={open} onHide={closeModal} className='publishBlogModal'>
             <Form onSubmit={handleSubmit}>
-                {/* <Modal.Header
-                  style={{
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    border: "none",
-                    marginBottom: "0"
-                  }}
-                >
-                  <p style={{fontFamily: "Montserrat", fontWeight: "600", fontSize: "1.5rem"}}>Publish to</p>
-                </Modal.Header> */}
-                <Modal.Body 
-                  // className='d-flex justify-content-between'
-                >
-                   {/* <p style={{fontFamily: "Montserrat", fontWeight: "600", fontSize: "1.5rem"}}>Publish to</p> */}
+        
+                <Modal.Body >
                    <p className='text-center fw-bold fs-2 pt-3'>Publish</p>
                    <p style={{fontFamily: "Montserrat", fontWeight: "550", fontSize: "1rem"}}>Publish to</p>
-                    {['Hashnode', 'Medium', 'Dev.to'].map((label) => (
+                    {[
+                      // 'Hashnode', 
+                    'Medium', 'Dev.to'].map((label) => (
                         <div key={`${label}`} className="mb-2">
                             <Form.Check
                                 type="checkbox"
@@ -217,25 +203,9 @@ const PublishBlog = ({ currentNoteText, mediumSecret, hashnodeSecret, openAISecr
                         value={canonicalUrl}
                         onChange={(e) => setCanonicalUrl(e.target.value)}
                       />
-                      {/* <Form.Control
-                        as={"file"}
-                        placeholder='cover image'
-                      /> */}
-                      {/* <Form.Group>
-                        <Form.Label>Cover Image</Form.Label>
-                        <Form.Control className='custom-file-input' type="file" />
-                      </Form.Group> */}
+                      
                       <div className="custom-file">
-                        {/* <label className="custom-file-label" htmlFor="customFile">
-                            Choose Image
-                        </label> */}
                         <p>Choose Image</p>
-                        {/* <Form.Label className="custom-file-label">Cover Image</Form.Label>
-                        <Form.Control 
-                          type="file" 
-                          className="custom-file-input" 
-                          id="customFile" 
-                        /> */}
                           <ButtonGroup toggle className='d-flex justify-content-center'>
                             <Button
                               variant={uploadType === 'upload' ? 'dark' : 'outline-dark'}
