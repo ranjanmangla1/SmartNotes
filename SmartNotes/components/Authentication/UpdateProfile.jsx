@@ -7,7 +7,7 @@ import CentredContainer from './CentredContainer';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUser } from '@fortawesome/free-solid-svg-icons';
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage"
-import { storage, database } from '../../firebase';
+import { storage} from '../../firebase';
 import { getDoc, setDoc, addDoc, doc } from "firebase/firestore"
 
 export default function UpdateProfile() {
@@ -32,14 +32,14 @@ export default function UpdateProfile() {
 
         uploadBytes(uploadRef, file)
         .then(snapshot => {
+            console.log("download url generated")
             return getDownloadURL(snapshot.ref)
         })
         .then(downloadURL => {
             UpdateProfileImage(downloadURL)
-
         })
 
-        window.location.reload();
+        // window.location.reload();
     }
 
     function handleSubmit(event) {
@@ -98,7 +98,7 @@ export default function UpdateProfile() {
                                     </Form.Label>
                                 :   <Form.Label htmlFor="file" className='d-flex justify-content-center'>
                                     {/* <div className='w-100' style={{ display: "flex", justifyContent: "center"}}> */}
-                                    < img alt='avatar' className='image-responsive' src={currentUser.photoURL}  style={{borderRadius: "100%", width: "30%", height: "30%", pointerEvents: "none"}}/>
+                                    < img alt='avatar' className='image-responsive' src={currentUser.photoURL}  style={{borderRadius: "100%", width: "30%", height: "30%", pointerEvents: "none", objectFit: "cover"}}/>
                                     {/* </div> */}
                                 </Form.Label>
                             }

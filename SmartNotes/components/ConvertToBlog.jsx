@@ -6,7 +6,7 @@ import { db, notesCollection, secretsCollection } from '../firebase';
 import { useAuth } from '../contexts/AuthContext';
 import { addDoc, doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 
-const ConvertToBlog = ({currentNoteText}) => {
+const ConvertToBlog = ({currentNoteText, openAISecret, currentNote}) => {
     const [open, setOpen] = useState(false);
     // const [hashnodeSecret, setHashnodeSecret] = useState("");
     // const [mediumSecret, setMediumSecret] = useState("");
@@ -48,8 +48,9 @@ const ConvertToBlog = ({currentNoteText}) => {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
+                'Authorization': openAISecret
               },
-              body: JSON.stringify({ apiKey, requestPrompt }),
+              body: JSON.stringify({requestPrompt}),
             });
       
             if (!response.ok) {

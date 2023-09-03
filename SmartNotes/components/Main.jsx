@@ -1,4 +1,4 @@
-import React from "react"
+import React, {useState} from "react"
 
 import Sidebar from "./Sidebar"
 // import Auth from "./components/Auth"
@@ -15,16 +15,49 @@ import { useAuth } from "../contexts/AuthContext"
 export default function Main() {
     const { currentUser } = useAuth();
     const [notes, setNotes] = React.useState([])
+    const [notesLen, setNotesLen] = React.useState(null)
     const [currentNoteId, setCurrentNoteId] = React.useState("");
     const [tempNoteText, setTempNoteText] = React.useState("");
 
-    const [title, setTitle] = React.useState("");
+    const [hashnodeSecret, setHashnodeSecret] = useState("");
+    const [mediumSecret, setMediumSecret] = useState("");
+    const [openAISecret, setOpenAISecret] = useState("");
+    const [devToSecret, setDevToSecret] = useState("");
+
+    const updateHashnode = (value) => {
+        setHashnodeSecret(value)
+    }
+
+    const updateDevTo = (value) => {
+        setDevToSecret(value)
+    }
+ 
+    const onTempNoteTextChange = (newValue) => {
+        // Update the state with the new value
+        setTempNoteText(newValue);
+    };
+
+    const [title, setTitle] = React.useState("New title 34-35");
+    // const [title, setTitle] = useState('New Note');
+
+    // const updateTitle = (newTitle) => {
+    //     setTitle(newTitle)
+    // }
 
     const currentNote = 
         notes.find(note => note.id === currentNoteId) 
         || notes[0]
 
     const sortedNotes = notes.sort((a, b) => b.updatedAt - a.updatedAt)
+
+    const updateTitle = (newTitle) => {
+        setTitle(newTitle);
+        // Update the current note's title in Firestore
+        if (currentNoteId) {
+          const docRef = doc(db, "notes", currentNoteId);
+          setDoc(docRef, { title: newTitle }, { merge: true });
+        }
+    };
 
     React.useEffect(() => {
         if (!currentUser) return;
@@ -33,8 +66,10 @@ export default function Main() {
         const unsubscribe = onSnapshot(userNotesQuery, function(snapshot) {
             const notesArr = snapshot.docs.map(doc => ({
                 ...doc.data(),
-                id: doc.id
+                id: doc.id,
+                title: doc.data().title
             }));
+            setNotesLen(notesArr.length)
             setNotes(notesArr);
         });
 
@@ -63,18 +98,19 @@ export default function Main() {
 
     React.useEffect(() => {
         if (currentNote) {
-            setTempNoteText(currentNote.body)
+            setTempNoteText(currentNote?.body)
+            setTitle(currentNote?.title)
         }
     }, [currentNote])
 
     React.useEffect(() => {
         const timeoutId = setTimeout(() => {
-            if (tempNoteText !== currentNote.body) {
-                updateNote(tempNoteText)
+            if (tempNoteText !== currentNote?.body) {
+                updateNote(tempNoteText, title)
             }
         }, 500)
         return () => clearTimeout(timeoutId)
-    }, [tempNoteText])
+    }, [tempNoteText, title])
 
     // console.log(sortedNotes)
 
@@ -92,6 +128,7 @@ export default function Main() {
         if (!currentUser) return;
 
         const newNote = {
+            title: "New Note",
             body: "# Type your markdown note's title here",
             createdAt: Date.now(),
             updatedAt: Date.now(),
@@ -134,9 +171,9 @@ export default function Main() {
         }
     }
 
-    async function updateNote(text) {
+    async function updateNote(text, newTitle) {
         const docRef = doc(db, "notes", currentNoteId)
-        await setDoc(docRef, { body: text, updatedAt: Date.now() }, { merge: true })
+        await setDoc(docRef, { body: text,title: newTitle, updatedAt: Date.now() }, { merge: true })
     }
 
     // async function deleteNote(noteId) {
@@ -149,10 +186,35 @@ export default function Main() {
     return (
         <main>
             {
-                notes.length > 0
+                 
+                notesLen === null
+                 ? 
+                 <div className="no-notes">
+                    <h1>Loading...</h1>
+                 </div>
+                 :(notesLen > 0
                     ?
                     <div>
-                        <NavbarComponent currentNoteText={tempNoteText} currentNote={currentNote} />
+                        <NavbarComponent 
+                            currentNoteText={tempNoteText} 
+                            currentNote={currentNote} 
+                            
+                            hashnodeSecret={hashnodeSecret}
+                            updateHashnode={updateHashnode}
+                            
+                            updateDevTo={updateDevTo}
+                            
+                            setHashnodeSecret={setHashnodeSecret}
+                            
+                            mediumSecret={mediumSecret}
+                            setMediumSecret={setMediumSecret}
+                            
+                            openAISecret={openAISecret}
+                            setOpenAISecret={setOpenAISecret}
+
+                            devToSecret={devToSecret}
+                            setDevToSecret={setDevToSecret}
+                        />
                         <Split
                             sizes={[20, 80]}
                             direction="horizontal"
@@ -168,10 +230,21 @@ export default function Main() {
                             />
                             
                                 <Editor
-                                    editorTitle={title}
-                                    setEditorTitle={setTitle}
+                                    currentNote={currentNote}
+                                    editorTitle={currentNote?.title}
+                                    setEditorTitle={updateTitle}
                                     tempNoteText={tempNoteText}
-                                    setTempNoteText={setTempNoteText}
+                                    onTempNoteTextChange={onTempNoteTextChange}
+                                    // setTempNoteText={setTempNoteText}
+                                    hashnodeSecret={hashnodeSecret}
+                                    updateHashnode={updateHashnode}
+                                    setHashnodeSecret={setHashnodeSecret}
+                                    mediumSecret={mediumSecret}
+                                    setMediumSecret={setMediumSecret}
+                                    openAISecret={openAISecret}
+                                    setOpenAISecret={setOpenAISecret}
+                                    devToSecret={devToSecret}
+                                    setDevToSecret={setDevToSecret}
                                 />
                         </Split>
                     </div>
@@ -184,7 +257,7 @@ export default function Main() {
                         >
                             Create one now
                         </button>
-                    </div>
+                    </div>)
                     // <Container className="d-flex align-items-center justify-content-center" style={{minHeight: "100vh"}}>
                     //     <div className="w-100" style={{maxWidth: "400px"}}>
                     //         <Auth />

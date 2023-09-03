@@ -9,7 +9,8 @@ import ConvertToBlog from './ConvertToBlog'
 import PublishBlog from './PublishBlog'
 import Profile from './Profile'
 
-export default function NavbarComponent({currentNoteText, currentNote}) {
+export default function NavbarComponent({currentNoteText, currentNote, mediumSecret, setMediumSecret,
+    hashnodeSecret, setHashnodeSecret,openAISecret ,setOpenAISecret, updateHashnode, devToSecret, setDevToSecret,updateDevTo }) {
     const { currentUser } = useAuth()
     console.log(currentUser.photoURL)
     const avatar = currentUser.photoURL
@@ -51,8 +52,23 @@ export default function NavbarComponent({currentNoteText, currentNote}) {
                     }}
                 >
 
-                    <ConvertToBlog currentNoteText={currentNoteText} currentNote={currentNote} />
-                    <Keys />
+                    <ConvertToBlog 
+                        currentNoteText={currentNoteText} 
+                        currentNote={currentNote} 
+                        openAISecret={openAISecret}
+                    />
+                    <Keys
+                        hashnodeSecret={hashnodeSecret}
+                        updateHashnode={updateHashnode}
+                        setHashnodeSecret={setHashnodeSecret}
+                        mediumSecret={mediumSecret}
+                        setMediumSecret={setMediumSecret}
+                        openAISecret={openAISecret}
+                        setOpenAISecret={setOpenAISecret}
+                        devToSecret={devToSecret}
+                        setDevToSecret={setDevToSecret}
+                        updateDevTo={updateDevTo}
+                    />
                     {/* <Nav.Link  as={Link} to="/profile" style={{alignSelf: "stretch"}}> */}
                         <Profile avatarImg={avatar} />
                         {/* </Nav.Link> */}

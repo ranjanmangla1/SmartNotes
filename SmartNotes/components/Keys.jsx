@@ -5,6 +5,7 @@ import { faKey, faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 import { db, secretsCollection } from '../firebase';
 import { useAuth } from '../contexts/AuthContext';
 import { addDoc, doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
+import { AES, enc } from 'crypto-js';
 
 const PasswordInput = ({ label, value, onChange }) => {
     const [showPassword, setShowPassword] = useState(false);
@@ -16,14 +17,14 @@ const PasswordInput = ({ label, value, onChange }) => {
     return (
         <Form.Group>
             <Form.Label>{label}</Form.Label>
-            <div className="input-group">
+            <div className="d-flex align-items-center">
                 <Form.Control
                     type={showPassword ? 'text' : 'password'}
                     value={value}
                     onChange={onChange}
                 />
-                <div className="input-group-append">
-                    <Button variant="outline-secondary" onClick={togglePasswordVisibility}>
+                <div className="input-group-append" style={{marginLeft: "4px"}}>
+                    <Button variant="outline-dark" onClick={togglePasswordVisibility}>
                         <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
                     </Button>
                 </div>
@@ -32,11 +33,15 @@ const PasswordInput = ({ label, value, onChange }) => {
     );
 };
 
-const Keys = () => {
+const Keys = ({mediumSecret, setMediumSecret,
+    hashnodeSecret, setHashnodeSecret,openAISecret,setOpenAISecret, updateHashnode, 
+    
+    devToSecret, setDevToSecret , updateDevTo
+    }) => {
+    // const [devToSecret, setDevToSecret] = useState("");
+    // const updateDevTo = (value) => {
+    //     setDevToSecret(value)    }
     const [open, setOpen] = useState(false);
-    const [hashnodeSecret, setHashnodeSecret] = useState("");
-    const [mediumSecret, setMediumSecret] = useState("");
-    const [openAISecret, setOpenAISecret] = useState("");
 
     const [isHovered, setIsHovered] = useState(false);
     const handleMouseEnter = () => {
@@ -64,13 +69,30 @@ const Keys = () => {
         }
     
         try {
+            const encryptedHashnodeSecret = AES.encrypt(hashnodeSecret, 'your-secret-key').toString();
+            const encryptedMediumSecret = AES.encrypt(mediumSecret, 'your-secret-key').toString();
+            const encryptedOpenAISecret = AES.encrypt(openAISecret, 'your-secret-key').toString();
+            const encryptedDevToSecret = AES.encrypt(devToSecret, 'your-secret-key').toString();
+    
+            // const userSecretDocRef = doc(secretsCollection, currentUser.uid);
+            // const userSecretDocSnapshot = await getDoc(userSecretDocRef);
+    
             const userSecretDocRef = doc(secretsCollection, currentUser.uid);
             const userSecretDocSnapshot = await getDoc(userSecretDocRef);
     
+            // const newSecret = {
+            //     hashnodeSecret: hashnodeSecret,
+            //     mediumSecret: mediumSecret,
+            //     openAISecret: openAISecret,
+            //     devToSecret: devToSecret,
+            //     user: currentUser.uid
+            // }
+
             const newSecret = {
-                hashnodeSecret: hashnodeSecret,
-                mediumSecret: mediumSecret,
-                openAISecret: openAISecret,
+                hashnodeSecret: encryptedHashnodeSecret,
+                mediumSecret: encryptedMediumSecret,
+                openAISecret: encryptedOpenAISecret,
+                devToSecret: encryptedDevToSecret,
                 user: currentUser.uid
             }
     
@@ -95,9 +117,20 @@ const Keys = () => {
             const userSecretDocSnapshot = await getDoc(userSecretDocRef);
             if (userSecretDocSnapshot.exists()) {
                 const data = userSecretDocSnapshot.data();
-                setHashnodeSecret(data.hashnodeSecret || "");
-                setMediumSecret(data.mediumSecret || "");
-                setOpenAISecret(data.openAISecret || "");
+
+                const decryptedHashnodeSecret = AES.decrypt(data.hashnodeSecret, 'your-secret-key').toString(enc.Utf8);
+                const decryptedMediumSecret = AES.decrypt(data.mediumSecret, 'your-secret-key').toString(enc.Utf8);
+                const decryptedOpenAISecret = AES.decrypt(data.openAISecret, 'your-secret-key').toString(enc.Utf8);
+                const decryptedDevToSecret = AES.decrypt(data.devToSecret, 'your-secret-key').toString(enc.Utf8);
+    
+                updateHashnode(decryptedHashnodeSecret || "");
+                setMediumSecret(decryptedMediumSecret || "");
+                setOpenAISecret(decryptedOpenAISecret || "");
+                updateDevTo(decryptedDevToSecret || "");
+                // updateHashnode(data.hashnodeSecret || "");
+                // setMediumSecret(data.mediumSecret || "");
+                // setOpenAISecret(data.openAISecret || "");
+                // updateDevTo(data.devToSecret || "");
             }
         }
     };
@@ -174,17 +207,23 @@ const Keys = () => {
                 </svg>
             </div>
             <Modal show={open} onHide={closeModal}>
+                <p className='text-center fw-bold fs-2 pt-3'>Your API Keys</p>
                 <Form onSubmit={handleSubmit}>
                     <Modal.Body>
                         <PasswordInput
                             label="Hashnode Secret"
                             value={hashnodeSecret}
-                            onChange={(e) => setHashnodeSecret(e.target.value)}
+                            onChange={(e) => updateHashnode(e.target.value)}
                         />
                         <PasswordInput
                             label="Medium Secret"
                             value={mediumSecret}
                             onChange={(e) => setMediumSecret(e.target.value)}
+                        />
+                        <PasswordInput
+                            label="Dev.to Secret"
+                            value={devToSecret}
+                            onChange={(e) => updateDevTo(e.target.value)}
                         />
                         <PasswordInput
                             label="Open AI API key"
@@ -193,10 +232,10 @@ const Keys = () => {
                         />
                     </Modal.Body>
                     <Modal.Footer>
-                        <Button variant="secondary" onClick={closeModal}>
+                        <Button variant="outline-dark" onClick={closeModal}>
                             Close
                         </Button>
-                        <Button variant="success" type="submit">
+                        <Button variant="dark" type="submit">
                             Save Changes
                         </Button>
                     </Modal.Footer>

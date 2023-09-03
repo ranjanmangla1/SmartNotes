@@ -9,7 +9,9 @@ export default function Sidebar(props) {
                 }`}
                 onClick={() => props.setCurrentNoteId(note.id)}
             >
-                <h4 className="text-snippet">{note.body.split("\n")[0] == `# Type your markdown note's title here` || note.body.split("\n")[0] == "" ? `Note ${index + 1}` : note.body.split("\n")[0] }</h4>
+                <h4 className="text-snippet">
+                    {note.body.split("\n")[0] == `# Type your markdown note's title here` || note.body.split("\n")[0] == "" ? `Note ${index + 1}` : (note.title ? note.title : "Enter Title") }
+                </h4>
                 <button 
                     className="delete-btn"
                     onClick={() => props.deleteNote(note.id)}

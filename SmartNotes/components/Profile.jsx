@@ -1,32 +1,71 @@
 import { faUser } from '@fortawesome/free-solid-svg-icons';
-import React, { useState } from 'react'
+import React, { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { Dropdown, Button } from 'react-bootstrap';
+import { Dropdown, Toast, ToastBody } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { useNavigate } from 'react-router-dom';
 
 const Profile = () => {
-    const [open, setOpen] = useState(false);
+    const [isOpen, setIsOpen] = useState(false);
+    // const dropdownRef = useRef(null);
+    const { currentUser, logOut } = useAuth();
+    const avatar = currentUser.photoURL;
+    const navigate = useNavigate();
 
-    const { currentUser } = useAuth()
-    console.log(currentUser.photoURL)
-    const avatar = currentUser.photoURL
-
-    const openModal = () => {
-        setOpen(true);
+    const toggleDropdown = () => {
+        setIsOpen(!isOpen);
     };
 
-    const closeModal = () => {
-        setOpen(false);
-    };
-    
+    function handleLogout(e) {
+        // e.preventDefaults();
+        try {
+        logOut();
+        navigate("/login");
+        } catch(error) {
+            <Toast>
+                <ToastBody>
+                    Unable to logout!
+                </ToastBody>
+            </Toast>
+        }
+    }
+
+    // const handleClickOutside = (event) => {
+    //     if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+    //         closeDropdown();
+    //     }
+    // };
+
+    // useEffect(() => {
+    //     window.addEventListener('click', handleClickOutside);
+    //     return () => {
+    //         window.removeEventListener('click', handleClickOutside);
+    //     };
+    // }, []);
+
     return (
-        // <div onClick={openModal} style={{alignSelf: "stretch", position: "relative"}}>
-        // <Dropdown alignRight> <Dropdown.Toggle className=“custom-toggle”> … </Dropdown.Toggle> <Dropdown.Menu> … </Dropdown.Menu> </Dropdown>
-            
-            <Dropdown  boundary="viewport" popperConfig={{strategy: 'fixed'}}>
-                <Dropdown.Toggle className="custom-toggle">
-                    {
-                        avatar
+        <Dropdown
+            show={isOpen}
+            onClick={(e) => e.stopPropagation()}
+        >
+            <Dropdown.Toggle
+                className="custom-toggle"
+                onClick={toggleDropdown}
+            >
+                {
+                    // avatar ? (
+                    //     <img
+                    //         alt="avatar"
+                    //         src={currentUser.photoURL}
+                    //         className="profile-avatar"
+                    //     />
+                    // ) : (
+                    //     <FontAwesomeIcon
+                    //         icon={faUser}
+                    //         className="profile-icon"
+                    //     />
+                    // )
+                    avatar
                         ? <img alt='avatar' 
                             style={{ 
                                 width: "3rem", 
@@ -44,16 +83,21 @@ const Profile = () => {
                                 textAlign: "center"
                             }}
                         />
-                    }
-                </Dropdown.Toggle>
-                <Dropdown.Menu>
-                <Dropdown.Item href="#">Home Page</Dropdown.Item>
-                <Dropdown.Item href="#">Settings</Dropdown.Item>
-                <Dropdown.Item href="#">Logout</Dropdown.Item>
-                </Dropdown.Menu>
-            </Dropdown>
-        // </div>
-    )
-}
+                }
+            </Dropdown.Toggle>
+            <Dropdown.Menu
+                show={isOpen}
+                align="end"
+                // ref={dropdownRef}
+                // variant='dark'
+                style={{ padding: "0", margin: "0", zIndex: "1000", marginTop: "3px", backgroundColor: "#f5f5f5"}}
+            >
+                <Dropdown.Item className="custom-dropdown-item" href="/" >Home Page</Dropdown.Item>
+                <Dropdown.Item className="custom-dropdown-item" href="/update-profile" >Settings</Dropdown.Item>
+                <Dropdown.Item className="custom-dropdown-item" onClick={handleLogout}>Logout</Dropdown.Item>
+            </Dropdown.Menu>
+        </Dropdown>
+    );
+};
 
-export default Profile
+export default Profile;

@@ -12,6 +12,48 @@ body {
     font-family: 'Karla', sans-serif;
 }
 
+html {
+    --scrollbarBG: transparent;
+    --thumbBG: #dbdbdb;
+  }
+  body::-webkit-scrollbar {
+    width: 11px;
+  }
+  body {
+    scrollbar-width: 4px;
+    scrollbar-color: var(--thumbBG) var(--scrollbarBG);
+  }
+  body::-webkit-scrollbar-track {
+    background: var(--scrollbarBG);
+  }
+  body::-webkit-scrollbar-thumb {
+    background-color: var(--thumbBG) ;
+    border-radius: 6px;
+    border: 3px solid var(--scrollbarBG);
+  }
+  /* Add these lines */
+  
+/* For WebKit browsers */
+/* Customize scrollbar for WebKit browsers */
+/* Hide the scrollbar by default */
+/* Your global styles here */
+
+/* CSS Styles */
+/* .app-wrapper {
+    /* Set the maximum height or other styles for your scrollable content */
+    /* max-height: 100%;
+    overflow-y: hidden; */
+    /* Optional transition for smooth scrolling */
+    /* transition: overflow-y 0.3s ease-in-out;
+  }
+  
+  .app-wrapper.show-scrollbar {
+    overflow-y: scroll;
+  } */ 
+  
+  
+
+
 /* body {
     display: flex;
     min-height: 100vh;
@@ -379,3 +421,16 @@ button:focus {
   border-color: black; /* Set the desired border color */
   box-shadow: none; /* Remove the default box-shadow */
 }
+
+.custom-dropdown-item:hover {
+    background-color: black !important; /* Override default Bootstrap styles */
+    color: white !important; /* Text color when hovered */
+    border-radius: 3px !important;
+  }
+  
+  /* For click (active) effect */
+  .custom-dropdown-item:active {
+    background-color: black !important; /* Override default Bootstrap styles */
+    color: white !important; /* Text color when clicked */
+    border-radius: 3px !important;
+  }

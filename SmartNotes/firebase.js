@@ -3,17 +3,20 @@ import { initializeApp } from "firebase/app";
 import { getFirestore, collection } from 'firebase/firestore';
 import { getAuth, onAuthStateChanged} from "firebase/auth";
 import { getStorage } from "firebase/storage";
-import { getDatabase, ref, set } from "firebase/database";
+import { getDatabase, set } from "firebase/database";
+import { uploadBytes, getDownloadURL, ref } from "firebase/storage";
+// import { loadEnv } from "vite";
 
 // app's Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyCnVyYOKx-LmpF6xMlLX3haieEKQIo8S60",
-  authDomain: "smartnotes-f0e6d.firebaseapp.com",
-  projectId: "smartnotes-f0e6d",
-  storageBucket: "smartnotes-f0e6d.appspot.com",
-  messagingSenderId: "539613810890",
-  appId: "1:539613810890:web:adf40a5ef157261926a433"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID
 };
+
 
 
 // Initialize Firebase
@@ -39,6 +42,22 @@ export const database = {
 }
 
 // creating collection : collection("name of database", "created collection")
+
+export const storage = getStorage(app);
+
+export async function uploadImageToFirebaseStorage(userId, file) {
+  const storageRef = ref(storage, `users/${userId}/images/${file.name}`);
+
+  try {
+    await uploadBytes(storageRef, file);
+    const downloadUrl = await getDownloadURL(storageRef);
+    return downloadUrl; // Return the URL of the uploaded image
+  } catch (error) {
+    console.error('Error uploading image:', error);
+    return null;
+  }
+}
+
 export const notesCollection = collection(db, "notes");
 
 export const secretsCollection = collection(db, "secrets");
@@ -47,4 +66,16 @@ export const auth = getAuth(app);
 
 export default app;
 
-export const storage = getStorage(app);
+export const handleImageUpload = async (blob) => {
+  // Get the initialized Firebase Storage instance from your exported storage
+  const storageRef = ref(storage, `images/${Math.random().toString(16).slice(1,)}`);
+
+  try {
+    await uploadBytes(storageRef, blob);
+    const downloadUrl = await getDownloadURL(storageRef);
+    return downloadUrl; // Return the URL of the uploaded image
+  } catch (error) {
+    console.error('Error uploading image:', error);
+    return null;
+  }
+};

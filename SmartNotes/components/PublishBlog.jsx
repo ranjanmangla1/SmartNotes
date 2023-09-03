@@ -1,8 +1,9 @@
 import React, { useState } from 'react'
-import { Button, Modal, Form } from 'react-bootstrap'
+import { Button, Modal, Form, ButtonGroup } from 'react-bootstrap'
 import { useAuth } from '../contexts/AuthContext';
+import { handleImageUpload } from '../firebase';
 
-const PublishBlog = ({ currentNoteText, currentNote }) => {
+const PublishBlog = ({ currentNoteText, mediumSecret, hashnodeSecret, openAISecret, editorTitle }) => {
   const [open, setOpen] = useState(false);
 
   const [checkedBoxes, setCheckedBoxes] = useState({
@@ -10,8 +11,17 @@ const PublishBlog = ({ currentNoteText, currentNote }) => {
     Medium: false,
     'Dev.to': false,
   });
-  
-//   const apiKey = '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';
+
+  const [uploadType, setUploadType] = useState('upload'); // 'upload' or 'link'
+    const [selectedImage, setSelectedImage] = useState(null);
+    const [imageLink, setImageLink] = useState('');
+    console.log("editor title: " + editorTitle)
+    // const [title, setTitle] = useState(editorTitle);
+    const [title, setTitle] = useState(editorTitle);
+    const [description, setDescription] = useState("");
+    const [canonicalUrl, setCanonicalUrl] = useState("");
+    const [tags, setTags] = useState("");
+    const [series, setSeries] = useState("");
 
   const {currentUser} = useAuth();
 
@@ -38,10 +48,43 @@ const PublishBlog = ({ currentNoteText, currentNote }) => {
         setIsHovered(false);
     };
 
+    const handleUploadTypeChange = (newUploadType) => {
+      setUploadType(newUploadType);
+    };
+  
+    const handleImageChange = (e) => {
+      const file = e.target.files[0];
+      setSelectedImage(file);
+    };
+  
+    const handleLinkChange = (e) => {
+      setImageLink(e.target.value);
+    };
+
+    // const handleTags = (e) => {
+      
+      // console.log(arrayOfValues);
+    //   setTags(arrayOfValues);
+    // }
+
     const handleSubmit = async (e) => {
         e.preventDefault();
 
+      const commaSeparatedString = tags;
+      const tagArray = commaSeparatedString.split(",");
+
+      const seriesArray = series.split(",");
+
         console.log(checkedBoxes);
+        // let imageUrl = "";
+
+        if (uploadType === 'upload') {
+          if (selectedImage) {
+            const imageUrl = await handleImageUpload(file);
+            setImageLink(imageUrl)
+            setRenderedContent(<Image src={imageUrl} alt="Uploaded" />);
+          }
+        }
 
         if(checkedBoxes[Hashnode]) {
             console.log('posting blog on hashnode')
@@ -52,15 +95,15 @@ const PublishBlog = ({ currentNoteText, currentNote }) => {
             const body_markdown = currentNoteText;
 
             const article = {
-              title: 'Why you should start blogging?',
+              title: {title},
               body_markdown, // Use the variable defined above
-              tags: ['programming', 'javascript', 'blogging'],
-              series: 'Self Improvement Series',
+              tags: tagArray,
+              series: seriesArray,
               published: true, // Set to true if you want to publish the article
               // Add user input for these properties
-              main_image: "https://fastly.picsum.photos/id/8/5000/3333.jpg?hmac=OeG5ufhPYQBd6Rx1TAldAuF92lhCzAhKQKttGfawWuA", // Set to a valid image URL or null
-              canonical_url: null, // Set to the original URL or null
-              description: "importance of blogging", // Set to a short description or null
+              main_image: imageLink, // Set to a valid image URL or null
+              canonical_url: canonicalUrl, // Set to the original URL or null
+              description: description, // Set to a short description or null
             };
           
             const articleData = { article };
@@ -89,16 +132,17 @@ const PublishBlog = ({ currentNoteText, currentNote }) => {
 
         if(checkedBoxes['Medium']) {
             const blogData = {
-                title: 'Why you should start blogging?',
+                title: title,
                 content: currentNoteText,
-                canonicalUrl: 'https://fastly.picsum.photos/id/8/5000/3333.jpg?hmac=OeG5ufhPYQBd6Rx1TAldAuF92lhCzAhKQKttGfawWuA',
-                tags: ['technology', 'web', 'coding'],
+                canonicalUrl: canonicalUrl,
+                tags: tagArray,
               };
               
               fetch('http://localhost:3000/post-blog', {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',
+                  'Authorization': mediumSecret
                 },
                 body: JSON.stringify(blogData),
               })
@@ -143,7 +187,9 @@ const PublishBlog = ({ currentNoteText, currentNote }) => {
                 <Modal.Body 
                   // className='d-flex justify-content-between'
                 >
-                   <p style={{fontFamily: "Montserrat", fontWeight: "600", fontSize: "1.5rem"}}>Publish to</p>
+                   {/* <p style={{fontFamily: "Montserrat", fontWeight: "600", fontSize: "1.5rem"}}>Publish to</p> */}
+                   <p className='text-center fw-bold fs-2 pt-3'>Publish</p>
+                   <p style={{fontFamily: "Montserrat", fontWeight: "550", fontSize: "1rem"}}>Publish to</p>
                     {['Hashnode', 'Medium', 'Dev.to'].map((label) => (
                         <div key={`${label}`} className="mb-2">
                             <Form.Check
@@ -161,11 +207,15 @@ const PublishBlog = ({ currentNoteText, currentNote }) => {
                    >
                     <Form.Control
                         placeholder='title'
+                        value={ title }
+                        onChange={(e) => setTitle(e.target.value)}
                         className='custom-input-group'
                       />
                       <Form.Control
                         placeholder='canonical URL (leave blank, if not)'
                         className='custom-input-group'
+                        value={canonicalUrl}
+                        onChange={(e) => setCanonicalUrl(e.target.value)}
                       />
                       {/* <Form.Control
                         as={"file"}
@@ -179,17 +229,68 @@ const PublishBlog = ({ currentNoteText, currentNote }) => {
                         {/* <label className="custom-file-label" htmlFor="customFile">
                             Choose Image
                         </label> */}
-                        <Form.Label className="custom-file-label">Cover Image</Form.Label>
-                        <Form.Control type="file" className="custom-file-input" id="customFile" />
+                        <p>Choose Image</p>
+                        {/* <Form.Label className="custom-file-label">Cover Image</Form.Label>
+                        <Form.Control 
+                          type="file" 
+                          className="custom-file-input" 
+                          id="customFile" 
+                        /> */}
+                          <ButtonGroup toggle className='d-flex justify-content-center'>
+                            <Button
+                              variant={uploadType === 'upload' ? 'dark' : 'outline-dark'}
+                              value="upload"
+                              onClick={() => handleUploadTypeChange('upload')}
+                            >
+                              Upload Image
+                            </Button>
+                            <Button
+                              variant={uploadType === 'link' ? 'dark' : 'outline-dark'}
+                              value="link"
+                              onClick={() => handleUploadTypeChange('link')}
+                            >
+                              Add Link
+                            </Button>
+                          </ButtonGroup>
+
+                          {uploadType === 'upload' && (
+                            <Form.Group controlId="customFile">
+                              <Form.Label className="custom-file-label d-none">Select Image</Form.Label>
+                              <Form.Control
+                                type="file"
+                                className="custom-file-input"
+                                id="customFile"
+                                onChange={handleImageChange}
+                              />
+                            </Form.Group>
+                          )}
+
+                          {uploadType === 'link' && (
+                            <Form.Group controlId="imageLink">
+                              <Form.Label className='d-none'>Image Link</Form.Label>
+                              <Form.Control
+                                type="text"
+                                placeholder="Enter image link"
+                                value={imageLink}
+                                onChange={handleLinkChange}
+                              />
+                            </Form.Group>
+                          )}
+
                       </div>
                       <Form.Control as="textarea" 
-                        value={prompt} 
+                        value={description} 
                         placeholder='add text description'
                         rows={7} 
-                        onChange={(e) => setPrompt(e.target.value)}
+                        onChange={(e) => setDescription(e.target.value)}
                       />
                       <Form.Control
                         placeholder='series (add comma seperated values)'
+                      />
+                      <Form.Control
+                        value={tags}
+                        onChange={(e) => setTags(e.target.value)}
+                        placeholder='tags (add comma seperated values)'
                       />
                    </div>
                 </Modal.Body>
