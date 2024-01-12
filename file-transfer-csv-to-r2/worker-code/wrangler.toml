@@ -1,0 +1,10 @@
+name = "worker-code"
+main = "src/index.js"
+compatibility_date = "2023-12-18"
+
+[[r2_buckets]]
+binding = 'FILE_MIGRATE_BUCKET'
+bucket_name = 'file-migration-test'
+
+[vars]
+AUTH_SECRET2 = "@AUTH_SECRET2"
